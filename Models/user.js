@@ -9,13 +9,22 @@ const validRoles = {
 };
 
 const userSchema = new Schema({
-
-    name: { type: String, unique: true, required: [true, 'Name is required'] },
-    email: { type: String, unique: true, required: [true, 'Email is required'] },
-    password: { type: String, required: [true, 'Password is required'] },
+    name: { type: String, unique: true, required: [true, "Name is required"] },
+    email: { type: String, unique: true, required: [true, "Email is required"] },
+    password: { type: String, required: [true, "Password is required"] },
     img: { type: String, required: false },
-    role: { type: String, required: true, default: 'USER_ROLE', enum: validRoles }
-})
+    role: {
+        type: String,
+        required: true,
+        default: "USER_ROLE",
+        enum: validRoles
+    },
+    users: {
+        type: [{ id: Schema.Types.ObjectId, date: String, message: String }],
+        ref: "User",
+        default: []
+    }
+});
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })
 

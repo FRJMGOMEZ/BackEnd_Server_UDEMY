@@ -36,7 +36,7 @@ app.post('/', (req, res) => {
 
         userDb.password = ':)';
 
-        let token = jwt.sign({ userDb }, SEED, { expiresIn: 14400 });
+        let token = jwt.sign({ userDb }, SEED, { expiresIn: 432000 });
 
         res.status(200).json({
             ok: true,

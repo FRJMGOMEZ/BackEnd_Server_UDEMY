@@ -4,9 +4,9 @@ const bcrypt = require("bcrypt");
 
 const User = require('../Models/user');
 
-const jwt = require('jsonwebtoken');
+const verifyToken = require('../Middlewares/auth').verifyToken;
 
-const mdAuth = require('../Middlewares/auth');
+const verifyAdmin = require('../Middlewares/admin').verifyAdmin;
 
 const app = express();
 
@@ -14,7 +14,15 @@ const app = express();
 
 //Get all users.
 app.get('/', (req, res, next) => {
+
+    let from = req.query.from || 0;
+    from = Number(from);
+
+    let limit = req.query.limit || null;
+
     User.find({}, 'name email img role')
+        .skip(from)
+        .limit(limit)
         .exec(
             (err, users) => {
                 if (err) {
@@ -26,18 +34,26 @@ app.get('/', (req, res, next) => {
                             errors: err
                         });
                 }
-                return res
-                    .status(200)
-                    .json({
-                        ok: true,
-                        users
-                    });
+
+                User.count({}, (err, conteo) => {
+
+                    return res
+                        .status(200)
+                        .json({
+                            ok: true,
+                            users,
+                            total: conteo
+                        });
+                })
             })
 })
 
 //Create new user
 
-app.post('/', mdAuth.verifyToken, (req, res, next) => {
+app.post('/', [verifyToken, verifyAdmin], (req, res, next) => {
+
+    let userId = req.user._id;
+
     let body = req.body;
     if (body.role === 'admin_role' || 'user_role') {
         body.role = body.role.toUpperCase()
@@ -48,12 +64,21 @@ app.post('/', mdAuth.verifyToken, (req, res, next) => {
         password: bcrypt.hashSync(body.password, 10),
         img: body.img,
         role: body.role,
+        users: [],
     })
+
+    let date = new Date();
+    let stringDate = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+
+    let userTimeStamp = { id: userId, date: stringDate, message: "Creation" };
+
+    user.users.push(userTimeStamp);
+
     user.save((err, userSaved) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                message: "ERROR LOADING USERS",
+                message: "ERROR SAVING USER",
                 errors: err
             })
         }
@@ -68,7 +93,9 @@ app.post('/', mdAuth.verifyToken, (req, res, next) => {
 
 //Update user
 
-app.put('/:id', (req, res) => {
+app.put('/:id', [verifyToken, verifyAdmin], (req, res) => {
+
+    let userId = req.user._id;
     let body = req.body;
     let id = req.params.id;
     User.findById(id, (err, userDb) => {
@@ -90,8 +117,22 @@ app.put('/:id', (req, res) => {
                 });
         }
         if (body.name) { userDb.name = body.name }
-        userDb.email = body.email;
-        userDb.role = body.role;
+        if (body.email) { userDb.email = body.email }
+        if (body.role) { userDb.role = body.role }
+
+        let date = new Date()
+        let stringDate = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
+
+        let userTimeStamp = { id: userId, date: stringDate, message: "Modification" };
+
+        if ((userDb.users.length = 3)) {
+            userDb.users[0] = userDb.users[1];
+            userDb.users[1] = userDb.users[2];
+            userDb.users[2] = userTimeStamp;
+        } else {
+            userDb.users.push(userTimeStamp)
+        }
+
         userDb.save((err, userSaved) => {
             userSaved.password = ':)';
             if (err) {
@@ -109,7 +150,7 @@ app.put('/:id', (req, res) => {
 })
 
 
-app.delete('/:id', (req, res) => {
+app.delete('/:id', [verifyToken, verifyAdmin], (req, res) => {
     let id = req.params.id;
     User.findByIdAndDelete(id, (err, userDeleted) => {
         if (err) {

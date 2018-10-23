@@ -7,11 +7,15 @@ const bodyParser = require("body-parser");
 const appRoutes = require('../SERVER/Routes/app');
 const userRoutes = require('../SERVER/Routes/user');
 const loginRoutes = require('../SERVER/Routes/login');
+const hospitalRoutes = require('../SERVER/Routes/hospital');
+const doctorRoutes = require('../SERVER/Routes/doctor');
+const searchRoutes = require("../SERVER/Routes/search");
+const uploadRoutes = require('../SERVER/Routes/upload');
+const imagesRoutes = require('../SERVER/Routes/images');
 /////////////////////////////////////
 
 //Inizalization of variables
 const app = express()
-
 
 ////////////MIDDLEWARES//////////////
 //Body-parser
@@ -22,6 +26,13 @@ app.use(bodyParser.json())
 app.use('/', appRoutes)
 app.use('/user', userRoutes)
 app.use("/login", loginRoutes);
+app.use("/hospital", hospitalRoutes);
+app.use("/doctor", doctorRoutes);
+app.use('/search', searchRoutes);
+app.use('/upload', uploadRoutes);
+app.use("/images", imagesRoutes);
+
+
 ////////////////////////////////////////
 
 //////////////MONGODB////////////////////
