@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
         });
 })
 
-app.post('/', [verifyToken, getHospitalId, verifyAdmin], (req, res) => {
+app.post('/', [verifyToken, verifyAdmin, getHospitalId, ], (req, res) => {
 
     let body = req.body;
     let hospitalId = req.hospitalId;

@@ -12,7 +12,7 @@ const userSchema = new Schema({
     name: { type: String, unique: true, required: [true, "Name is required"] },
     email: { type: String, unique: true, required: [true, "Email is required"] },
     password: { type: String, required: [true, "Password is required"] },
-    img: { type: String, required: false },
+    img: { type: String, required: false, default: undefined },
     role: {
         type: String,
         required: true,
@@ -23,7 +23,8 @@ const userSchema = new Schema({
         type: [{ id: Schema.Types.ObjectId, date: String, message: String }],
         ref: "User",
         default: []
-    }
+    },
+    google: { type: Boolean, default: false }
 });
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} must be unique' })
